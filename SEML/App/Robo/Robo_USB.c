@@ -56,8 +56,8 @@ static void send(SendPacket *packet)
 
 
 /* 
- * @brief 接收函数
- */使用AI
+ * @brief 接收函数.使用AI
+ */
 static void receive(void)
 {
 	uint8_t rx_buf[sizeof(ReceivePacket)];
