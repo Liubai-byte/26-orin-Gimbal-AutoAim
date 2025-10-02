@@ -26,11 +26,15 @@
 static void send(ReceivePacket *packet);
 static void receive(void);
 static void init_packet(ReceivePacket *packet);
+
+static uint8_t calc_checksum(uint16_t cmd) {
+    return (uint8_t)((cmd & 0xFF) + ((cmd >> 8) & 0xFF));
+}//使用AI
 //End of prototypes
 
-
-ReceivePacket send_packet;
-SendPacket received_packet;
+//把类型和变量名弄成一致的
+ReceivePacket received_packet;
+SendPacket send_packet;
 
 void USB_Init()
 {
@@ -44,24 +48,32 @@ void USB_Task(void *conifg)
 	send(&send_packet);
 }
 
-static void send(ReceivePacket *packet)
+//初始化发送包
+static void init_packet(SendPacket *packet)
 {
-	
+    packet->cmd = 0x0000; 
+    packet->checksum = calc_checksum(packet->cmd);
 }
+
+//发送函数
+static void send(SendPacket *packet)
+{
+    packet->checksum = calc_checksum(packet->cmd);
+    CDC_Transmit_FS((uint8_t *)packet, sizeof(SendPacket));
+}
+
 
 /* 
  * @brief 接收函数
- */
+ */使用AI
 static void receive(void)
 {
-	
+	extern uint8_t UserRxBufferFS[3];
+    memcpy(&received_packet, UserRxBufferFS, sizeof(ReceivePacket));
+    if (received_packet.checksum == calc_checksum(received_packet.cmd)) {
+        // 校验通过，可以处理 received_packet.cmd
+    } else {
+        // 校验失败，丢弃
+    }
 }
 
-/*
- * @brief 初始化发送数据包
- * @param packet 待初始化的数据包指针
-*/
-static void init_packet(ReceivePacket *packet)
-{
-	
-}
